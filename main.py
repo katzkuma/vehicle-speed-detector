@@ -39,13 +39,26 @@ args = vars(ap.parse_args())
 # created a *threaded* video stream, allow the camera sensor to warmup,
 # and start the FPS counter
 print("[INFO] starting THREADED frames from webcam...")
-cameraAccount = 'root:0800'
-cameraAdr = '169.254.18.191'
+
+# camera for testing
+axisCameraAccount = 'root:0800'
+axisCameraAdr = '169.254.18.191'
+
+# lounge room camera
+loungeCameraAccount = 'root:pass'
+loungeCameraAdr = '10.220.200.238'
+
+# old function for getting vedio stream
 # video = cv2.VideoCapture(0)
-#video = cv2.VideoCapture(rtspUrl)
-# rtspUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(cameraAccount, cameraAdr)
-rtspUrl = 0
-vs = WebcamVideoStream(src=rtspUrl).start()
+# video = cv2.VideoCapture(rtspUrl)
+
+# camera url
+axisUrl = 0
+# axisUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(axisCameraAccount, axisCameraAdr)
+loungeUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(loungeCameraAccount, loungeCameraAdr)
+
+# streamming video by subthread
+vs = WebcamVideoStream(src=loungeUrl).start()
 
 font=cv2.FONT_HERSHEY_TRIPLEX
 points = []
@@ -89,10 +102,10 @@ while True:
         cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
 
         # checking hotspot area (press Y to continue, N to restart setting)
-        key2=cv2.waitKey(1)
-        if key2 == ord('y'):
+        keyYN=cv2.waitKey(1)
+        if keyYN == ord('y'):
             break
-        elif key2 == ord('n'):
+        elif keyYN == ord('n'):
             cv2.setMouseCallback('Capturing', click_event)
             points = []
             pass
@@ -171,6 +184,10 @@ if len(points) == 4:
         fps=1/elapsed_time
         print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
         predict.draw_fps(frame, fps)
+
+        # drawing detecting line on output form
+        cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
+        cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
 
         cv2.imshow("Capturing", frame)
         fpsCounter.update()
