@@ -11,7 +11,7 @@ from keras.layers.merge import add
 from keras.models import Model, load_model
 from PIL import Image
 
-import cv2
+from cv2 import cv2
 from camera import loadCam
 from camera import predict
 
@@ -46,13 +46,93 @@ cameraAdr = '169.254.18.191'
 # rtspUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(cameraAccount, cameraAdr)
 rtspUrl = 0
 vs = WebcamVideoStream(src=rtspUrl).start()
-fpsCounter = FPS().start()
 
+font=cv2.FONT_HERSHEY_TRIPLEX
+points = []
+
+def click_event(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        cv2.circle(frame, (x, y), 3, (0, 0, 255), -1)
+        points.append((x, y))
+
+
+
+frame = vs.read()
+
+# creating a hotspot layout
+hotspot = frame.copy()
+cv2.imshow("Capturing", frame)
+cv2.setMouseCallback('Capturing', click_event)
 
 while True:
+    frame = vs.read()
+
+    # guiding of setting hotspot area
+    if len(points) == 4:
+        # showing guiding text
+        cv2.putText(frame,'Do you want to start detecting with these hotspot? (y/n)',(40,40),font,1,(38, 15, 245),2)
+
+        # removing event of mouse click
+        cv2.setMouseCallback('Capturing', lambda *args : None)
+
+        # drawing detecting line on hotspot layout
+        hotspot = frame.copy()
+        cv2.line(hotspot, points[0], points[1], (0, 0, 255), 150)
+        cv2.line(hotspot, points[2], points[3], (0, 0, 255), 150)
+        
+        # hotspot area is unfinished
+        # cv2.rectangle(frame, points[0], points[1], (0, 0, 255), -1)
+        # cv2.rectangle(frame, points[2], points[3], (0, 0, 255), -1)
+
+        # drawing detecting line on output form
+        cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
+        cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
+
+        # checking hotspot area (press Y to continue, N to restart setting)
+        key2=cv2.waitKey(1)
+        if key2 == ord('y'):
+            break
+        elif key2 == ord('n'):
+            cv2.setMouseCallback('Capturing', click_event)
+            points = []
+            pass
+        pass
+    elif len(points) >= 2:
+        # showing guiding text
+        cv2.putText(frame,'Choose a hotspot on first of the road.',(40,40),font,1,(38, 15, 245),2)
+
+        # preview the hotspot line
+        cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
+        if len(points) == 3:
+            cv2.circle(frame, points[2], 3, (38, 15, 245), -1)
+        pass
+    elif len(points) < 2:
+        # showing guiding text
+        cv2.putText(frame,'Choose a hotspot on second of the road.',(40,40),font,1,(38, 15, 245),2)
+
+        # preview the hotspot line
+        if len(points) == 1:
+            cv2.circle(frame, points[0], 3, (38, 15, 245), -1)
+        pass
+    else :
+        pass
+
+    cv2.imshow("Capturing", frame)
+
+    # press Q to quit the application
+    key2=cv2.waitKey(1)
+    if key2 == ord('q'):
+        # reset a list of hotspot setting
+        points = []
+        break
+
+# checking for the setting of hotspot
+if len(points) == 4:
+    fpsCounter = FPS().start()
+    while True:
         #_, frame = video.read()
         frame = vs.read()
-        
+
         # load and prepare image
         image, image_w, image_h, input_w, input_h = loadCam.load_image_cam(frame)
         
@@ -72,7 +152,7 @@ while True:
         # suppress non-maximal boxes
         predict.do_nms(boxes, 0.5)
         # correct the sizes of the bounding boxes for the shape of the image
-        predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w)
+        predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w, hotspot)
 
         
         
@@ -97,11 +177,11 @@ while True:
         key=cv2.waitKey(1)
         if key == ord('q'):
                 break
-                
+                    
 
-fpsCounter.stop()
-print("[INFO] elasped time: {:.2f}".format(fpsCounter.elapsed()))
-print("[INFO] approx. FPS: {:.2f}".format(fpsCounter.fps()))
+    fpsCounter.stop()
+    print("[INFO] elasped time: {:.2f}".format(fpsCounter.elapsed()))
+    print("[INFO] approx. FPS: {:.2f}".format(fpsCounter.fps()))
 
 vs.stop()
 cv2.destroyAllWindows()
