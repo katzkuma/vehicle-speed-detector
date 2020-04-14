@@ -1,5 +1,5 @@
 import numpy as np
-import cv2
+from cv2 import cv2 
 
 # define the labels
 labels = []
@@ -27,7 +27,7 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
             objectness = netout[int(row)][int(col)][b][4]
             if(objectness.all() <= obj_thresh): continue
             
-            if(netout[int(row)][col][b][5:][67] == 0): continue
+            if(netout[int(row)][col][b][5:][0] == 0): continue
             # if(netout[int(row)][col][b][5:][0] == 0 and netout[int(row)][col][b][5:][2] == 0 and netout[int(row)][col][b][5:][7] == 0): continue
             # first 4 elements are x, y, w, and h
             x, y, w, h = netout[int(row)][int(col)][b][:4]
@@ -67,8 +67,9 @@ class BoundBox:
  
         return self.score
 
-def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
+def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w, hotspot):
     new_w, new_h = net_w, net_h
+    removeList = list()
     for i in range(len(boxes)):
         x_offset, x_scale = (net_w - new_w)/2./net_w, float(new_w)/net_w
         y_offset, y_scale = (net_h - new_h)/2./net_h, float(new_h)/net_h
@@ -76,6 +77,14 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
         boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
         boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
+        cx = (boxes[i].xmin + boxes[i].xmax) / 2
+        cy = (boxes[i].ymin + boxes[i].ymax) / 2
+        if (hotspot[int(cy), int(cx)] != [0, 0, 255]).all():
+            removeList.append(i)
+
+    for index in range(len(removeList)):
+        boxes.pop(removeList[(index - len(removeList)) * (-1) - 1])
+
 
 def do_nms(boxes, nms_thresh):
     if len(boxes) > 0:
