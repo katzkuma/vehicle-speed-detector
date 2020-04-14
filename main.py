@@ -99,7 +99,7 @@ while True:
         pass
     elif len(points) >= 2:
         # showing guiding text
-        cv2.putText(frame,'Choose a hotspot on first of the road.',(40,40),font,1,(38, 15, 245),2)
+        cv2.putText(frame,'Choose a hotspot on second of the road.',(40,40),font,1,(38, 15, 245),2)
 
         # preview the hotspot line
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
@@ -108,7 +108,7 @@ while True:
         pass
     elif len(points) < 2:
         # showing guiding text
-        cv2.putText(frame,'Choose a hotspot on second of the road.',(40,40),font,1,(38, 15, 245),2)
+        cv2.putText(frame,'Choose a hotspot on first of the road.',(40,40),font,1,(38, 15, 245),2)
 
         # preview the hotspot line
         if len(points) == 1:
