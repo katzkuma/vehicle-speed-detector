@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from cv2 import cv2 
 
 # define the labels
@@ -141,22 +142,67 @@ def get_boxes(boxes, thresh):
     return v_boxes, v_labels, v_scores, v_boxid
 
 # draw all results
-def draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid):
+def draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance):
+    movingSpeed = 0
+
     # draw each box
     for i in range(len(v_boxes)):
         box = v_boxes[i]
         # get coordinates
         y1, x1, y2, x2 = box.ymin, box.xmin, box.ymax, box.xmax
         width, height = x2 - x1, y2 - y1
-        
-        # draw text and score in top left corner
+
+        # get label and confidence of detected object for showing it in top left corner
         label = v_labels[i]
         confidence= v_scores[i]
-        cv2.putText(frame,label+" "+str(round(confidence,2)),(x1,y1+30),font,1,(255,255,255),2)
+        
+        # call calculating function
+        newMovingDistance, currentObjectDistance = calculateMovingDistance(width, lastObjectDistance)
+        if newMovingDistance > 0 :
+            # calculate velocity and convert unit from m/s to km/h
+            movingSpeed = newMovingDistance / elapsed_time * 1000 / 3600
+
+            # showing speed, text and score in top left corner
+            cv2.putText(frame,label+" "+str(round(confidence, 2)) + " speed:" + str(round(movingSpeed, 2)) + "(km/h)",(x1,y1+30),font,1,(255,255,255),2)
+        else:
+            # showing text and score in top left corner
+            cv2.putText(frame,label+" "+str(round(confidence, 2)),(x1,y1+30),font,1,(255,255,255),2)
 
         # draw the box
         color = colors[v_boxid[i]]
         cv2.rectangle(frame,(x1,y1),(x1+width,y1+height),color,2)
+
+        return newMovingDistance, currentObjectDistance
+    return 0, 0
+
+
+def calculateMovingDistance(widthPixels, lastObjectDistance):
+    # focal length of camera (mm)
+    focalLength = 5.5
+    # real width of detected object (cm)
+    objectWidth = 55
+    # real height of camera in lounge room (m)
+    loungeCameraHeight = 2.4
+    # real height of camera for testing (m)
+    testingCameraHeight = 0
+    # define a moving distance for calculating
+    movingDistance = 0
+
+    # getting the distance between object and camera ,formula: L = F * WC / px
+    currentObjectDistance = focalLength * objectWidth / widthPixels
+
+    
+    if lastObjectDistance == 0:
+        return 0, currentObjectDistance
+    elif lastObjectDistance > 0:
+        # calculating moving distance
+        movingDistance = math.sqrt(np.square(currentObjectDistance) - np.square(testingCameraHeight)) - math.sqrt(np.square(lastObjectDistance) - np.square(testingCameraHeight))
+
+        return movingDistance, currentObjectDistance
+    else:
+        print('calculating error in calculateSpeed func.')
+        pass
+
 
 # draw FPS
 def draw_fps(frame, fps):

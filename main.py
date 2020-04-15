@@ -53,12 +53,15 @@ loungeCameraAdr = '10.220.200.238'
 # video = cv2.VideoCapture(rtspUrl)
 
 # camera url
-axisUrl = 0
-# axisUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(axisCameraAccount, axisCameraAdr)
+webCamUrl = 0
+axisUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(axisCameraAccount, axisCameraAdr)
 loungeUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(loungeCameraAccount, loungeCameraAdr)
 
 # streamming video by subthread
-vs = WebcamVideoStream(src=loungeUrl).start()
+vs = WebcamVideoStream(src=axisUrl).start()
+
+# define the lastObjectDistance for calculating speed
+lastObjectDistance = 0
 
 font=cv2.FONT_HERSHEY_TRIPLEX
 points = []
@@ -173,17 +176,19 @@ if len(points) == 4:
         # get the details of the detected objects
         v_boxes, v_labels, v_scores, v_boxid = predict.get_boxes(boxes, class_threshold)
 
-        # summarize what we found
-        for i in range(len(v_boxes)):
-            print(v_labels[i], v_scores[i])
-        # draw what we found
-        predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid)
-
         #show the computed time
         elapsed_time = time.time() - starting_time
         fps=1/elapsed_time
         print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
         predict.draw_fps(frame, fps)
+
+        # summarize what we found
+        for i in range(len(v_boxes)):
+            print(v_labels[i], v_scores[i])
+        # draw what we found
+        newMovingDistance, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
+        # saving current distance of detected object
+        lastObjectDistance = currentObjectDistance
 
         # drawing detecting line on output form
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
