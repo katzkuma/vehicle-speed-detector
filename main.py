@@ -14,6 +14,7 @@ from PIL import Image
 from cv2 import cv2
 from camera import loadCam
 from camera import predict
+from webApp import web
 
 import time
 from matplotlib.patches import Rectangle
@@ -24,6 +25,8 @@ from imutils.video import WebcamVideoStream
 from imutils.video import FPS
 import argparse
 import imutils
+
+web.start()
 
 #Load the saved model
 model = load_model('yolov3.h5')
