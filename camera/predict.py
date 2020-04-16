@@ -181,8 +181,8 @@ def calculateMovingDistance(widthPixels, lastObjectDistance):
     focalLength = 5.5
     # real width of detected object (cm)
     objectWidth = 55
-    # real height of camera in lounge room (m)
-    loungeCameraHeight = 2.4
+    # real distance between center of person and camera in lounge room (m)
+    loungeCameraHeight = 1.54
     # real height of camera for testing (m)
     testingCameraHeight = 0
     # define a moving distance for calculating
@@ -196,7 +196,13 @@ def calculateMovingDistance(widthPixels, lastObjectDistance):
         return 0, currentObjectDistance
     elif lastObjectDistance > 0:
         # calculating moving distance
-        movingDistance = math.sqrt(np.square(currentObjectDistance) - np.square(testingCameraHeight)) - math.sqrt(np.square(lastObjectDistance) - np.square(testingCameraHeight))
+        currentDistance = np.square(currentObjectDistance) - np.square(testingCameraHeight)
+        lastDistance = np.square(lastObjectDistance) - np.square(testingCameraHeight)
+
+        # make sure the math domin over zero before square rooting 
+        if currentDistance > 0 and lastDistance > 0:
+            movingDistance = math.sqrt(currentDistance) - math.sqrt(lastDistance)
+            pass
 
         return movingDistance, currentObjectDistance
     else:
