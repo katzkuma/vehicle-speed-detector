@@ -98,17 +98,18 @@ while True:
         # removing event of mouse click
         cv2.setMouseCallback('Capturing', lambda *args : None)
 
-        # drawing detecting line on hotspot layout
+        # drawing detecting area on hotspot layout
         hotspot = frame.copy()
-        cv2.line(hotspot, points[0], points[1], (0, 0, 255), 150)
-        cv2.line(hotspot, points[2], points[3], (0, 0, 255), 150)
-        
-        # hotspot area is unfinished
-        # cv2.rectangle(frame, points[0], points[1], (0, 0, 255), -1)
-        # cv2.rectangle(frame, points[2], points[3], (0, 0, 255), -1)
+        cv2.rectangle(hotspot, points[0], points[3], (0, 0, 255), -1)
+        cv2.rectangle(hotspot, points[1], points[2], (0, 0, 255), -1)
+
+        # cv2.line(hotspot, points[0], points[1], (0, 0, 255), 150)
+        # cv2.line(hotspot, points[2], points[3], (0, 0, 255), 150)
 
         # drawing detecting line on output form
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
+        cv2.line(frame, points[0], points[2], (0, 0, 255), 5)
+        cv2.line(frame, points[1], points[3], (0, 0, 255), 5)
         cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
 
         # checking hotspot area (press Y to continue, N to restart setting)
@@ -203,6 +204,8 @@ if len(points) == 4:
 
         # drawing detecting line on output form
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
+        cv2.line(frame, points[0], points[2], (0, 0, 255), 5)
+        cv2.line(frame, points[1], points[3], (0, 0, 255), 5)
         cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
 
         cv2.imshow("Capturing", frame)
