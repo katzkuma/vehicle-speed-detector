@@ -78,10 +78,11 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w, hotspot):
         boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
         boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
-        cx = (boxes[i].xmax)
-        cy = (boxes[i].ymin + boxes[i].ymax) / 2
-        if (hotspot[int(cy), int(cx)] != [0, 0, 255]).all():
-            removeList.append(i)
+        cx = (boxes[i].xmin + boxes[i].xmax) / 2
+        cy = (boxes[i].ymax)
+        if cx > 80 and cx < 1200 and cy > 60 and cy < 700:
+            if (hotspot[int(cy), int(cx)] != [0, 0, 255]).all():
+                removeList.append(i)
 
     for index in range(len(removeList)):
         boxes.pop(removeList[(index - len(removeList)) * (-1) - 1])
@@ -143,8 +144,6 @@ def get_boxes(boxes, thresh):
 
 # draw all results
 def draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance):
-    movingSpeed = 0
-
     # draw each box
     for i in range(len(v_boxes)):
         box = v_boxes[i]
@@ -158,21 +157,19 @@ def draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, la
         
         # call calculating function
         newMovingDistance, currentObjectDistance = calculateMovingDistance(width, lastObjectDistance)
-        if newMovingDistance > 0 :
-            # calculate velocity and convert unit from m/s to km/h
-            movingSpeed = newMovingDistance / elapsed_time * 1000 / 3600
+        
+        # calculate velocity and convert unit from m/s to km/h
+        movingSpeed = newMovingDistance / elapsed_time * 1000 / 3600
 
-            # showing speed, text and score in top left corner
-            cv2.putText(frame,label+" "+str(round(confidence, 2)) + " speed:" + str(round(movingSpeed, 2)) + "(km/h)",(x1,y1+30),font,1,(255,255,255),2)
-        else:
-            # showing text and score in top left corner
-            cv2.putText(frame,label+" "+str(round(confidence, 2)),(x1,y1+30),font,1,(255,255,255),2)
+        # showing speed, text and score in top left corner
+        # cv2.putText(frame,label+" "+str(round(confidence, 2)) + " speed:" + str(round(movingSpeed, 2)) + "(km/h)",(x1,y1+30),font,3,(255,0,0),4)
+        cv2.putText(frame,"speed:" + str(round(movingSpeed, 2)) + "(km/h)",(x1,y1+30),font,3,(255,0,0),4)
 
         # draw the box
         color = colors[v_boxid[i]]
         cv2.rectangle(frame,(x1,y1),(x1+width,y1+height),color,2)
 
-        return newMovingDistance, currentObjectDistance
+        return str(round(movingSpeed, 2)), currentObjectDistance
     return 0, 0
 
 
