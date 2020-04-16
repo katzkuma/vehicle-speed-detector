@@ -15,6 +15,7 @@ from cv2 import cv2
 from camera import loadCam
 from camera import predict
 from webApp.webServer import webServer
+from pusherService import pusherService
 
 import time
 from matplotlib.patches import Rectangle
@@ -25,7 +26,6 @@ from imutils.video import WebcamVideoStream
 from imutils.video import FPS
 import argparse
 import imutils
-import pusher
 
 
 
@@ -65,7 +65,7 @@ axisUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(axisCam
 loungeUrl = 'rtsp://{}@{}/axis-media/media.amp?resolution=1280x720'.format(loungeCameraAccount, loungeCameraAdr)
 
 # streamming video by subthread
-vs = WebcamVideoStream(src=webCamUrl).start()
+vs = WebcamVideoStream(src=loungeUrl).start()
 
 # define the lastObjectDistance for calculating speed
 lastObjectDistance = 0
@@ -195,15 +195,9 @@ if len(points) == 4:
         # draw what we found
         newMovingDistance, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
 
-        pusher_client = pusher.Pusher(
-            app_id='982998',
-            key='b65f086d00319eef857b',
-            secret='0fffa578aabacabc1f2b',
-            cluster='us2',
-            ssl=True
-        )
+        pusher = pusherService(newMovingDistance)
+        pusher.start()
 
-        pusher_client.trigger('my-channel', 'my-event', {'message': newMovingDistance})
         # saving current distance of detected object
         lastObjectDistance = currentObjectDistance
 
