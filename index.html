@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Traffic Situation in Saint Vincent & Grenadines</title>
+    
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    
+
+    
+    <style>
+      /* css for google map */
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+    <script src="https://js.pusher.com/5.1/pusher.min.js"></script>
+    <script>
+
+      // Enable pusher logging - don't include this in production
+      Pusher.logToConsole = true;
+
+      var pusher = new Pusher('b65f086d00319eef857b', {
+        cluster: 'us2',
+        forceTLS: true
+      });
+
+      var channel = pusher.subscribe('my-channel');
+      channel.bind('my-event', function(data) {
+        if(JSON.stringify(data['message']) == 0) {
+          changeColor('#42f57b');
+        }
+        else {
+          changeColor('#FF0000');
+        }
+      });
+      
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map;
+      var flightPath;
+      function initMap(color) {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 13.154307, lng: -61.223435},
+          zoom: 17
+        });
+
+        var flightPlanCoordinates = [
+          {lat: 13.154141, lng:  -61.224051},
+          {lat: 13.153389, lng: -61.223150}
+        ];
+        flightPath = new google.maps.Polyline({
+          path: flightPlanCoordinates,
+          geodesic: true,
+          strokeColor: '#42f57b',
+          strokeOpacity: 0.8,
+          strokeWeight: 10
+        });
+
+        flightPath.setMap(map);
+      }
+
+      function changeColor(color) {
+
+        flightPath.setMap(null);
+        var flightPlanCoordinates = [
+          {lat: 13.154141, lng:  -61.224051},
+          {lat: 13.153389, lng: -61.223150}
+        ];
+
+        flightPath = new google.maps.Polyline({
+          path: flightPlanCoordinates,
+          geodesic: true,
+          strokeColor: color,
+          strokeOpacity: 0.8,
+          strokeWeight: 10
+        });
+
+        flightPath.setMap(map);
+
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6Qeg3znnWHZN1LM3UV7zeyv9JegXQhcg&callback=initMap"
+    async defer></script>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>    
+  </body>
+</html>
