@@ -78,7 +78,7 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w, hotspot):
         boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
         boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
-        cx = (boxes[i].xmin + boxes[i].xmax) / 2
+        cx = (boxes[i].xmax)
         cy = (boxes[i].ymin + boxes[i].ymax) / 2
         if (hotspot[int(cy), int(cx)] != [0, 0, 255]).all():
             removeList.append(i)
