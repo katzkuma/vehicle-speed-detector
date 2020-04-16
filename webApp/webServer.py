@@ -34,7 +34,7 @@ class webServer:
 	# 停止服務函式 
 	def close_server(self):
 		print("closing at port", self.PORT)
-		self.server.server_close()
+		self.server.shutdown()
 		
 
 
