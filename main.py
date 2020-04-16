@@ -100,17 +100,18 @@ while True:
 
         # drawing detecting area on hotspot layout
         hotspot = frame.copy()
-        cv2.rectangle(hotspot, points[0], points[3], (0, 0, 255), -1)
-        cv2.rectangle(hotspot, points[1], points[2], (0, 0, 255), -1)
+        # cv2.rectangle(frame, poi[nts[0], points[3], (0, 0, 255), -1)
+        pointsForPoly = np.array(points,dtype=np.int32)
+        cv2.fillPoly(hotspot, [pointsForPoly], (0, 0, 255))
 
         # cv2.line(hotspot, points[0], points[1], (0, 0, 255), 150)
         # cv2.line(hotspot, points[2], points[3], (0, 0, 255), 150)
 
         # drawing detecting line on output form
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
-        cv2.line(frame, points[0], points[2], (0, 0, 255), 5)
-        cv2.line(frame, points[1], points[3], (0, 0, 255), 5)
+        cv2.line(frame, points[1], points[2], (0, 0, 255), 5)
         cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
+        cv2.line(frame, points[3], points[0], (0, 0, 255), 5)
 
         # checking hotspot area (press Y to continue, N to restart setting)
         keyYN=cv2.waitKey(1)
@@ -123,7 +124,7 @@ while True:
         pass
     elif len(points) >= 2:
         # showing guiding text
-        cv2.putText(frame,'Choose a hotspot on second of the road.',(40,40),font,1,(38, 15, 245),2)
+        cv2.putText(frame,'Choose 4 point for a hotspot.',(40,40),font,1,(38, 15, 245),2)
 
         # preview the hotspot line
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
@@ -132,7 +133,7 @@ while True:
         pass
     elif len(points) < 2:
         # showing guiding text
-        cv2.putText(frame,'Choose a hotspot on first of the road.',(40,40),font,1,(38, 15, 245),2)
+        cv2.putText(frame,'Choose 4 point for a hotspot.',(40,40),font,1,(38, 15, 245),2)
 
         # preview the hotspot line
         if len(points) == 1:
@@ -194,9 +195,9 @@ if len(points) == 4:
         for i in range(len(v_boxes)):
             print(v_labels[i], v_scores[i])
         # draw what we found
-        newMovingDistance, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
+        newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
 
-        pusher = pusherService(newMovingDistance)
+        pusher = pusherService(newMovingSpeed)
         pusher.start()
 
         # saving current distance of detected object
@@ -204,9 +205,9 @@ if len(points) == 4:
 
         # drawing detecting line on output form
         cv2.line(frame, points[0], points[1], (0, 0, 255), 5)
-        cv2.line(frame, points[0], points[2], (0, 0, 255), 5)
-        cv2.line(frame, points[1], points[3], (0, 0, 255), 5)
+        cv2.line(frame, points[1], points[2], (0, 0, 255), 5)
         cv2.line(frame, points[2], points[3], (0, 0, 255), 5)
+        cv2.line(frame, points[3], points[0], (0, 0, 255), 5)
 
         cv2.imshow("Capturing", frame)
         fpsCounter.update()
