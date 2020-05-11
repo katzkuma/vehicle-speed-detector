@@ -126,5 +126,5 @@ dmypy.json
 
 ### yolo ###
 # Ignore yolo weights file
-.h5
-.weights
+yolov3.h5
+yolov3.weights
