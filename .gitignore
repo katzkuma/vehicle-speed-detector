@@ -128,3 +128,8 @@ dmypy.json
 # Ignore yolo weights file
 yolov3.h5
 yolov3.weights
+
+### SQLite ###
+# Ignore SQLite database file
+migrations/
+db.sqlite3
