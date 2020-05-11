@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
+    # 'django.contrib.gis',
     'website'
 ]
 
@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'Traffic_Situation_System.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
@@ -124,4 +124,4 @@ STATIC_URL = '/static/'
 # SpatiaLite library
 # https://docs.djangoproject.com/en/3.0/ref/contrib/gis/install/spatialite/#spatialite-macos
 
-SPATIALITE_LIBRARY_PATH='/usr/local/lib/mod_spatialite.dylib'
+# SPATIALITE_LIBRARY_PATH='/usr/local/lib/mod_spatialite.dylib'
