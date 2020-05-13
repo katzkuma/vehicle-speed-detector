@@ -4,7 +4,7 @@ from django.db import models
 # Create your models here.
 class Camera(models.Model):
     camera_name = models.CharField(default="untitled", max_length=50)
-    stream_url = models.TextField(default="unsetted")
+    stream_url = models.URLField(default="http://camera.address/")
     camera_latitude = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     camera_longitude = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     focal_length = models.FloatField(default=0)
