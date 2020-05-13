@@ -135,3 +135,7 @@ coco.names
 # Ignore SQLite database file
 migrations/
 db.sqlite3
+
+### Django ###
+# Ignore migrations
+migrations/
