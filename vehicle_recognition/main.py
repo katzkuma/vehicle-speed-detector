@@ -55,6 +55,9 @@ axisCameraAdr = '169.254.18.191'
 loungeCameraAccount = 'root:pass'
 loungeCameraAdr = '10.220.200.238'
 
+# video
+videoUrl = "../../face_mask_detection/IMG_6510.mov"
+
 # old function for getting vedio stream
 # video = cv2.VideoCapture(0)
 # video = cv2.VideoCapture(rtspUrl)
