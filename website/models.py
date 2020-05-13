@@ -2,7 +2,7 @@ from django.db import models
 
 
 # Create your models here.
-class CameraList(models.Model):
+class Camera(models.Model):
     camera_name = models.CharField(default="untitled", max_length=50)
     stream_url = models.TextField(default="unsetted")
     camera_latitude = models.DecimalField
@@ -20,7 +20,7 @@ class CameraList(models.Model):
     class Meta:
         db_table = "tsd_camera_list"
 
-class TrafficHistory(models.Model):
+class TrafficRecord(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     first_lat_recognition_section = models.DecimalField
     first_lon_recognition_section = models.DecimalField
