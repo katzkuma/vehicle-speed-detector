@@ -1,0 +1,26 @@
+/* the size of region of interest is 760x480 */
+
+#ROIContainer {
+    width: 760px; 
+    height: 480px;
+    position: relative;
+    visibility: visible; 
+    border: solid 1px black;
+}
+
+#ROISelectorDiv,
+#streamingVideoDiv {
+width: 100%;
+height: 100%;
+position: absolute;
+top: 0;
+left: 0;
+}
+
+#ROISelectorDiv {
+z-index: 10;
+}
+
+.ui-draggable-handle {
+    cursor: move;
+}
