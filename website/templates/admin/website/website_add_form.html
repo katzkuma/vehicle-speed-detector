@@ -1,0 +1,26 @@
+{% extends "admin/change_form.html" %}
+{% block field_sets %}
+    {{ block.super }}
+    <script>
+        django.jQuery('#camera_form > div > fieldset > div.form-row.field-stream_url').after(
+            '\
+                <div class="form-row field-video-stream">\
+                    <div>\
+                        <label class="required" for="id_stream_url">Region of interest:</label>\
+                        <p >\
+                            <button onclick="start_feed(); return false;">Start Streaming</button> (Please click this button and choose a region of interest)\
+                        </p>\
+                    </div>\
+                </div>\
+            '
+        )
+
+        function start_feed() {
+            rtsp_url = django.jQuery('#id_stream_url').val()
+            django.jQuery('div.form-row.field-video-stream > div > p > button').after('\
+                <br><p>\
+                <img id="feeding_img" src="http://' + location.hostname + ':8000/video_feed/' + rtsp_url + '" width="760" height="480" alt="Sorry! Image not available at this time" onerror="this.style.display=\'none\'" /></p>\
+            ')
+        }
+    </script>
+{% endblock field_sets %}

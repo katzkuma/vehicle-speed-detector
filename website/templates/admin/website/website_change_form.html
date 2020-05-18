@@ -1,0 +1,111 @@
+{% extends "admin/change_form.html" %}
+
+{% comment %} load static folder for including css, js ,etc. {% endcomment %}
+{% load static %}
+
+{% comment %} extends into head of HTML {% endcomment %}
+{% block extrahead %}{{ block.super }}
+    <link rel="stylesheet" href="{% static "css/ROISelector.css" %}" />
+    <script src="{% static "js/jquery.js" %}"></script>
+{{ media }}
+{% endblock extrahead %}
+
+{% comment %} extends into output Form of HTML {% endcomment %}
+{% block field_sets %}
+    {{ block.super }}
+    <script>
+        {% comment %} make custom URLFormField looks like build-in one {% endcomment %}
+        $('#id_stream_url').attr('class','vURLField')
+        {% comment %} hide build-in ROI input for showing custom ROI selector {% endcomment %}
+        $('#camera_form > div > fieldset > div.form-row.field-region_of_interest').attr('hidden','')
+        {% comment %} make those input of form can read to submit {% endcomment %}
+        $('form').submit(function(e) {
+            $(':disabled').each(function(e) {
+                $(this).removeAttr('disabled');
+            })
+        });
+
+        {% comment %} insert custom ROI selector {% endcomment %}
+        $('#camera_form > div > fieldset > div.form-row.field-stream_resolution').after(
+            '\
+                <div class="form-row field-video-stream">\
+                    <div>\
+                        <label class="required" for="id_stream_url">Region of interest:</label>\
+                        <p >\
+                            <button id="start_feed_btn" onclick="if(confirm(\'Please make sure the information above is correct.\\nDo you want to select the region of interest?\')){start_feed()} return false;">Select ROI</button>\
+                            <button id="stop_feed_btn" onclick="stop_feed(); return false;" disabled hidden>Reenter info of camera</button> (Please click the left button and select a region of interest)\
+                            <br><br>\
+                        </p>\
+                    </div>\
+                </div>\
+            '
+        )
+
+        {% comment %} request streaming video with HTTP protocol by those information of camera {% endcomment %}
+        function start_feed() {
+            $('#id_stream_url').prop("disabled", true)
+            $('#id_camera_user').prop("disabled", true)
+            $('#id_camera_password').prop("disabled", true)
+            $('#id_camera_brand').prop("disabled", true)
+            $('#id_stream_resolution').prop("disabled", true)
+            $('#start_feed_btn').prop("disabled", true)
+            $('#start_feed_btn').prop("hidden", true)
+            $('#stop_feed_btn').prop("disabled", false)
+            $('#stop_feed_btn').prop("hidden", false)
+
+            rtsp_url = $('#id_stream_url').val().split('//')
+            camera_user = $('#id_camera_user').val()
+            camera_password = $('#id_camera_password').val()
+            rtsp_url = rtsp_url[0] + '//' + camera_user + ':' + camera_password + '@' + rtsp_url[1]
+            
+            {% comment %} show streaming video {% endcomment %}
+            $('div.form-row.field-video-stream > div > p > br:nth-child(3)').after('\
+                <div id="ROIContainer">\
+                    <div id="ROISelectorDiv">\
+                        <svg id="ROISelector" onmousedown="down(event)" onmouseup="up(event)" onmousemove="move(event)" height="100%" width="100%">\
+                            <polygon id="poly" points="0,0 0,0 0,0 0,0" style="fill: grey; stroke: black; stroke-width: 1;" opacity=".5" stroke-dasharray="5" />\
+                            <circle id="first_poly_point" name="handle" class="ui-draggable-handle" fill="black"></circle>\
+                            <circle id="second_poly_point" name="handle" class="ui-draggable-handle" fill="black"></circle>\
+                            <circle id="third_poly_point" name="handle" class="ui-draggable-handle" fill="black"></circle>\
+                            <circle id="fourth_poly_point" name="handle" class="ui-draggable-handle" fill="black"></circle>\
+                        </svg>\
+                    </div>\
+                    <div id="streamingVideoDiv" style="width: 760px; height: 480px; visibility: visible; border: solid 1px blue;">\
+                        <img id="feeding_img" style="z-index: 1;" src="http://' + location.hostname + ':8000/video_feed/' + rtsp_url + '" width="760" height="480" alt="Sorry! Image not available at this time" onerror="this.style.display=\'none\'" />\
+                    </div>\
+                </div>\
+            ')
+
+            {% comment %} show the given ROI from database {% endcomment %}
+            show();
+
+            {% comment %} disable function of dragging img element {% endcomment %}
+            $('#feeding_img').on('dragstart', function(event) { event.preventDefault(); });
+        }
+
+        function stop_feed() {
+            $('#id_stream_url').prop("disabled", false);
+            $('#id_camera_user').prop("disabled", false);
+            $('#id_camera_password').prop("disabled", false);
+            $('#id_camera_brand').prop("disabled", false);
+            $('#id_stream_resolution').prop("disabled", false);
+            $('#start_feed_btn').prop("disabled", false);
+            $('#start_feed_btn').prop("hidden", false)
+            $('#stop_feed_btn').prop("disabled", true);
+            $('#stop_feed_btn').prop("hidden", true)
+
+            rtsp_url = $('#id_stream_url').val().split('//');
+            camera_user = $('#id_camera_user').val();
+            camera_password = $('#id_camera_password').val();
+            rtsp_url = rtsp_url[0] + '//' + camera_user + ':' + camera_password + '@' + rtsp_url[1];
+            
+            {% comment %} remove ROI selector {% endcomment %}
+            $('#ROIContainer').remove();
+        }
+    </script>
+    
+    {% comment %} include ROI selector .js {% endcomment %}
+    <script src="{% static "js/ROISelector.js" %}"></script>
+
+
+{% endblock field_sets %}

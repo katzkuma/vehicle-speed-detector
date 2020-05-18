@@ -113,6 +113,7 @@ dmypy.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.vscode/launch.json
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
@@ -123,3 +124,18 @@ dmypy.json
 ### macOS ###
 # Ignore DS_store file
 .DS_Store
+
+### yolo ###
+# Ignore yolo weights file
+yolov3.h5
+yolov3.weights
+coco.names
+
+### SQLite ###
+# Ignore SQLite database file
+migrations/
+db.sqlite3
+
+### Django ###
+# Ignore migrations
+migrations/
