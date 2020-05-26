@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .admin import tsd_admin_site
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # for setting customized admin pages
+    path('admin/', tsd_admin_site.urls),
+    # for default admin pages
+    # path('admin/', admin.site.urls),
     path('', include('website.urls')),
+    path('detector/', include('vehicle_detector.urls')),
 ]

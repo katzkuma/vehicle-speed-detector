@@ -1,10 +1,14 @@
+import os
 import numpy as np
 import math
 from cv2 import cv2 
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # define the labels
 labels = []
-with open("coco.names","r") as f:
+with open(os.path.join(BASE_DIR, 'parameter', "coco.names"), "r") as f:
     labels = [line.strip() for line in f.readlines()]
 font = cv2.FONT_HERSHEY_PLAIN
 colors= np.random.uniform(0,255,size=(len(labels),3))

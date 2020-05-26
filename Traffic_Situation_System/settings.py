@@ -31,14 +31,16 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'django.contrib.gis',
-    'website'
+    'website',
+    'vehicle_detector',
+    # for setting customized admin pages
+    'Traffic_Situation_System.apps.TSDAdminConfig'
 ]
 
 MIDDLEWARE = [
