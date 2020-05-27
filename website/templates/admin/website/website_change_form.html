@@ -42,20 +42,25 @@
 
         {% comment %} request streaming video with HTTP protocol by those information of camera {% endcomment %}
         function start_feed() {
-            $('#id_stream_url').prop("disabled", true)
+            $('#id_ip_address').prop("disabled", true)
             $('#id_camera_user').prop("disabled", true)
             $('#id_camera_password').prop("disabled", true)
             $('#id_camera_brand').prop("disabled", true)
+            $('#id_streamming_type').prop("disabled", true);
             $('#id_stream_resolution').prop("disabled", true)
             $('#start_feed_btn').prop("disabled", true)
             $('#start_feed_btn').prop("hidden", true)
             $('#stop_feed_btn').prop("disabled", false)
             $('#stop_feed_btn').prop("hidden", false)
 
-            rtsp_url = $('#id_stream_url').val().split('//')
+            {% comment %} get streamming parameter {% endcomment %}
+            ip_address = $('#id_ip_address').val()
             camera_user = $('#id_camera_user').val()
             camera_password = $('#id_camera_password').val()
-            rtsp_url = rtsp_url[0] + '//' + camera_user + ':' + camera_password + '@' + rtsp_url[1]
+            camera_brand = $('#id_camera_brand').val()
+            streamming_type = $('#id_streamming_type').val()
+            parameter = '?ip_address=' + ip_address + '&camera_user=' + camera_user + '&camera_password=' + camera_password + '&camera_brand=' + camera_brand + '&streamming_type=' + streamming_type
+            src = 'http://' + location.hostname + ':8000/video_feed' + parameter
             
             {% comment %} show streaming video {% endcomment %}
             $('div.form-row.field-video-stream > div > p > br:nth-child(3)').after('\
@@ -70,7 +75,7 @@
                         </svg>\
                     </div>\
                     <div id="streamingVideoDiv" style="width: 760px; height: 480px; visibility: visible; border: solid 1px blue;">\
-                        <img id="feeding_img" style="z-index: 1;" src="http://' + location.hostname + ':8000/video_feed/' + rtsp_url + '" width="760" height="480" alt="Sorry! Image not available at this time" onerror="this.style.display=\'none\'" />\
+                        <img id="feeding_img" style="z-index: 1;" src="' + src + '" width="760" height="480" alt="Sorry! Image not available at this time" onerror="this.style.display=\'none\'" />\
                     </div>\
                 </div>\
             ')
@@ -83,20 +88,16 @@
         }
 
         function stop_feed() {
-            $('#id_stream_url').prop("disabled", false);
+            $('#id_ip_address').prop("disabled", false);
             $('#id_camera_user').prop("disabled", false);
             $('#id_camera_password').prop("disabled", false);
             $('#id_camera_brand').prop("disabled", false);
+            $('#id_streamming_type').prop("disabled", false);
             $('#id_stream_resolution').prop("disabled", false);
             $('#start_feed_btn').prop("disabled", false);
             $('#start_feed_btn').prop("hidden", false)
             $('#stop_feed_btn').prop("disabled", true);
             $('#stop_feed_btn').prop("hidden", true)
-
-            rtsp_url = $('#id_stream_url').val().split('//');
-            camera_user = $('#id_camera_user').val();
-            camera_password = $('#id_camera_password').val();
-            rtsp_url = rtsp_url[0] + '//' + camera_user + ':' + camera_password + '@' + rtsp_url[1];
             
             {% comment %} remove ROI selector {% endcomment %}
             $('#ROIContainer').remove();
