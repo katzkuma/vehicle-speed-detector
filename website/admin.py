@@ -10,10 +10,7 @@ class CameraAdmin(admin.ModelAdmin):
     change_form_template = 'admin/website/website_change_form.html'
 
     def get_queryset(self, request):
-        print(CameraAdmin)
-        print(self)
         queryset = super().get_queryset(request)
-        print(queryset)
         return queryset
 
     # customize for add_form.html
