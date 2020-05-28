@@ -18,18 +18,21 @@ def video_feed(request):
     resp = StreamingHttpResponse()
 
     ip_address = request.GET['ip_address']
-    camera_user = request.GET['camera_user']
-    camera_password = request.GET['camera_password']
+    camera_user = request.GET['camera_user'] if request.GET['camera_user'] is not None else ''
+    camera_password = request.GET['camera_password'] if request.GET['camera_password'] is not None else ''
     camera_brand = request.GET['camera_brand']
     streamming_type = request.GET['streamming_type']
 
     # URLPathByBranddata = URLPathByBrand()
     url_path = URLPathByBrand.objects.get(camera_brand=camera_brand, streamming_type=streamming_type).URLPath
 
-    if streamming_type == "IMAGE":
-        streamming_url = 'http://' + camera_user + ':' + camera_password + '@' + ip_address + url_path
+    if camera_brand == 'MAC':
+        streamming_url = 0
     else:
-        streamming_url = 'rtsp://' + camera_user + ':' + camera_password + '@' + ip_address + url_path
+        if streamming_type == "IMAGE":
+            streamming_url = 'http://' + camera_user + ':' + camera_password + '@' + ip_address + url_path
+        else:
+            streamming_url = 'rtsp://' + camera_user + ':' + camera_password + '@' + ip_address + url_path
 
     try:
         generator = generate(streamming_url)
