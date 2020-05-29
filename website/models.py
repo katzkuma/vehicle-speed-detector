@@ -15,6 +15,7 @@ class Camera(models.Model):
         ('AXIS', 'Axis'),
         ('GEO', 'GeoVision'),
         ('VIVO', 'VIVOTEK'),
+        ('MAC', 'MacCam'),
     ]
     camera_brand = models.CharField(
         max_length=5,
@@ -78,6 +79,7 @@ class URLPathByBrand(models.Model):
         ('AXIS', 'Axis'),
         ('GEO', 'GeoVision'),
         ('VIVO', 'VIVOTEK'),
+        ('MAC', 'MacCam'),
     ]
     camera_brand = models.CharField(
         max_length=5,
@@ -95,7 +97,7 @@ class URLPathByBrand(models.Model):
         default='IMAGE',
     )
 
-    URLPath = models.CharField(default='/axis-cgi/jpg/image.cgi', max_length=50)
+    URLPath = models.CharField(default='/axis-cgi/jpg/image.cgi', max_length=50, null=True, blank=True)
     last_modify_date = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     class Meta:
