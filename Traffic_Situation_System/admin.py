@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from website.models import Camera, TrafficRecord, URLPathByBrand
-from website.admin import CameraAdmin
+from website.admin import CameraAdmin, URLPathByBrandAdmin
 from django.template.response import TemplateResponse
 from vehicle_detector.views import vehicle_detector
 
@@ -34,7 +34,7 @@ class TSDAdminSite(admin.AdminSite):
 tsd_admin_site = TSDAdminSite()
 tsd_admin_site.register(Camera, CameraAdmin)
 tsd_admin_site.register(TrafficRecord)
-tsd_admin_site.register(URLPathByBrand)
+tsd_admin_site.register(URLPathByBrand, URLPathByBrandAdmin)
 tsd_admin_site.register(User)
 
 # change title on admin pages
