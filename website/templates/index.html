@@ -22,14 +22,35 @@
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin="">
     </script>
+
+    <script src="https://js.pusher.com/5.1/pusher.min.js"></script>
+    <script>
+        polylines = new Object()
+        function update_traffic_situation(detected_results) {
+            for(var result in detected_results) {
+                if (detected_results[result][0] > 0) {
+                    if (typeof(polylines[result]) != "undefined") {
+                        polylines[result].setStyle({color: 'red'})
+                    }
+                    else {
+                        polylines[result] = L.polyline([detected_results[result][1],detected_results[result][2]], {weight: 10, color:'red'}).addTo(mymap)
+                    }
+                }
+                else {
+                    if (typeof(polylines[result]) != "undefined") {
+                        polylines[result].setStyle({color: 'green'})
+                    }
+                    else {
+                        polylines[result] = L.polyline([detected_results[result][1],detected_results[result][2]], {weight: 10, color:'green'}).addTo(mymap)
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 
 <body>
     <div id="mapid"></div>
-
-
-    
-    
     <script>
         var mymap = L.map('mapid').setView([13.154307, -61.223435], 18);
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -40,6 +61,21 @@
             zoomOffset: -1,
             accessToken: 'pk.eyJ1Ijoia2F0emt1bWEiLCJhIjoiY2s5eXFmdTdoMHk0NDNlcGJ2b2lidjM3ayJ9.cc3ys8VvRiEOgAemK5cS4Q'
         }).addTo(mymap);
+    </script>
+
+    <script>
+        {% comment %} Enable pusher logging - don't include this in production {% endcomment %}
+        Pusher.logToConsole = true;
+
+        var pusher = new Pusher('b65f086d00319eef857b', {
+            cluster: 'us2',
+            forceTLS: true
+        });
+
+        var channel = pusher.subscribe('my-channel');
+        channel.bind('my-event', function(data) {
+            update_traffic_situation(data['message'])
+        });
     </script>
 </body>
 

@@ -1,3 +1,4 @@
+
 import os
 print('The backend of neural network is below:')
 os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
@@ -80,6 +81,8 @@ class Vehicle_Detector():
                 if self.stopped is True:
                     self.vs.stop()
                     break
+
+                detected_result = {}
                 
                 # detect each camera
                 for camera in self.cameraSet:
@@ -104,7 +107,7 @@ class Vehicle_Detector():
                     # get image from web camera
                     frame = self.vs.read()
                     if frame is None:
-                        print('Request img from camera time out')
+                        print('[Detector] Request img from camera time out: ' + camera.camera_name)
                     
                     # load and prepare image
                     image, image_w, image_h, input_w, input_h = loadCam.load_image_cam(frame)
@@ -130,9 +133,6 @@ class Vehicle_Detector():
                     # correct the sizes of the bounding boxes for the shape of the image
                     predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w, ROIframe)
 
-                    
-                    
-
                     # get the details of the detected objects
                     v_boxes, v_labels, v_scores, v_boxid = predict.get_boxes(boxes, class_threshold)
 
@@ -142,14 +142,15 @@ class Vehicle_Detector():
                     print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
                     predict.draw_fps(frame, fps)
 
+                    print('Detected from ' + camera.camera_name + '(' + camera.ip_address + ')')
                     # summarize what we found
                     for i in range(len(v_boxes)):
                         print(v_labels[i], v_scores[i])
                     # draw what we found
                     newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
 
-                    # pusher = pusherService(newMovingSpeed)
-                    # pusher.start()
+                    # creating the dict for storing detected result
+                    detected_result[camera.camera_name] = [len(v_boxes), [float(camera.first_lat_recognition_section), float(camera.first_lon_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lon_recognition_section)]]
 
                     # saving current distance of detected object
                     lastObjectDistance = currentObjectDistance
@@ -166,6 +167,10 @@ class Vehicle_Detector():
                     if key == ord('q'):
                         break
 
+                # push detected result by using Pusher API
+                pusher = pusherService(detected_result)
+                pusher.start()
+
             fpsCounter.stop()
             print("[INFO] elasped time: {:.2f}".format(fpsCounter.elapsed()))
             print("[INFO] approx. FPS: {:.2f}".format(fpsCounter.fps()))
@@ -174,7 +179,7 @@ class Vehicle_Detector():
 
     def stop(self):
         self.stopped = True
-        print('Detector has been shut down.')
+        print('[Detector] Detector has been shut down.')
 
     def create_ROI_layer(self, frame, width, height, ROIJson):
         # initialize a frame for creating a layer of region of interest
