@@ -8,6 +8,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static "css/index.css" %}" />
     <link REL="SHORTCUT ICON" HREF="{% static "images/favicon.ico" %}"/>
+    <script src="{% static "js/jquery.js" %}"></script>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -17,6 +18,8 @@
         integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
         crossorigin="" />
 
+
+
     <!-- Include Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
@@ -25,11 +28,8 @@
 </head>
 
 <body>
+    <input type="button" onclick="popup(); false">
     <div id="mapid"></div>
-
-
-    
-    
     <script>
         var mymap = L.map('mapid').setView([13.154307, -61.223435], 18);
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -41,6 +41,6 @@
             accessToken: 'pk.eyJ1Ijoia2F0emt1bWEiLCJhIjoiY2s5eXFmdTdoMHk0NDNlcGJ2b2lidjM3ayJ9.cc3ys8VvRiEOgAemK5cS4Q'
         }).addTo(mymap);
     </script>
+    <script src="{% static "js/traffic_situation.js" %}"></script>
 </body>
-
 </html>

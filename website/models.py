@@ -7,7 +7,7 @@ from .adminModels import cameraModels
 class Camera(models.Model):
     enabled = models.BooleanField(default=False)
     camera_name = models.CharField(default="untitled", max_length=50)
-    stream_url = cameraModels.RTSPURLField(default="rtsp://camera.address/")
+    ip_address = models.CharField(default="0.0.0.0", max_length=15)
     camera_user = models.CharField(default="", max_length=50)
     camera_password = models.CharField(default="", max_length=50)
 
@@ -15,11 +15,22 @@ class Camera(models.Model):
         ('AXIS', 'Axis'),
         ('GEO', 'GeoVision'),
         ('VIVO', 'VIVOTEK'),
+        ('MAC', 'MacCam'),
     ]
     camera_brand = models.CharField(
         max_length=5,
         choices=CAMERA_BRAND_CHOICES,
         default='GEO',
+    )
+
+    STREAMMING_TYPES_CHOICES = [
+        ('IMAGE', 'Image'),
+        ('VIDEO', 'Video')
+    ]
+    streamming_type = models.CharField(
+        max_length=5,
+        choices=STREAMMING_TYPES_CHOICES,
+        default='IMAGE',
     )
 
     STREAM_RESOLUTION_CHOICES = [
@@ -50,14 +61,46 @@ class Camera(models.Model):
         db_table = "tsd_camera_list"
 
 class TrafficRecord(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
     first_lat_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     first_lon_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     second_lat_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     second_lon_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     detected_vehicles = models.IntegerField(default=0)
     time_mean_speed = models.FloatField(default=0)
+    last_modify_date = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
     class Meta:
         db_table = "tsd_traffic_history"
+
+class URLPathByBrand(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+
+    CAMERA_BRAND_CHOICES = [
+        ('AXIS', 'Axis'),
+        ('GEO', 'GeoVision'),
+        ('VIVO', 'VIVOTEK'),
+        ('MAC', 'MacCam'),
+    ]
+    camera_brand = models.CharField(
+        max_length=5,
+        choices=CAMERA_BRAND_CHOICES,
+        default='GEO',
+    )
+
+    STREAMMING_TYPES_CHOICES = [
+        ('IMAGE', 'Image'),
+        ('VIDEO', 'Video')
+    ]
+    streamming_type = models.CharField(
+        max_length=5,
+        choices=STREAMMING_TYPES_CHOICES,
+        default='IMAGE',
+    )
+
+    URLPath = models.CharField(default='/axis-cgi/jpg/image.cgi', max_length=50, null=True, blank=True)
+    last_modify_date = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        db_table = "tsd_urlpath_list"
 
 

@@ -2,7 +2,7 @@ from imutils.video import VideoStream
 from cv2 import cv2
 
 def generate(rtsp_url):
-	# create a variable  to store output frame
+    	# create a variable  to store output frame
     outputFrame = None
 
     # request video streaming from inputted URL
@@ -29,6 +29,5 @@ def generate(rtsp_url):
         vs.stop()
     except:
         vs.stop()
-        print("except on grenerate.py")
         return 'error'
             

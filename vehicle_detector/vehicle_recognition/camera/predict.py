@@ -17,7 +17,7 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
     grid_h, grid_w = netout.shape[:2]
     nb_box = 3
     netout = netout.reshape((grid_h, grid_w, nb_box, -1))
-    nb_class = netout.shape[-1] - 5
+    # nb_class = netout.shape[-1] - 5
     boxes = []
     netout[..., :2]  = _sigmoid(netout[..., :2])
     netout[..., 4:]  = _sigmoid(netout[..., 4:])
@@ -83,7 +83,7 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w, hotspot):
         boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
         cx = (boxes[i].xmin + boxes[i].xmax) / 2
-        cy = (boxes[i].ymax)
+        cy = (boxes[i].ymin + boxes[i].ymax) / 2
         if cx > 80 and cx < 1200 and cy > 60 and cy < 700:
             if (hotspot[int(cy), int(cx)] != [0, 0, 255]).all():
                 removeList.append(i)
