@@ -3,8 +3,7 @@ import pusher
 from threading import Thread
 
 class pusherService:
-    def __init__(self, newMovingDistance):
-        self.movingDistance = newMovingDistance
+    def __init__(self):
         self.pusher_client = pusher.Pusher(
             app_id='982998',
             key='b65f086d00319eef857b',
@@ -14,15 +13,15 @@ class pusherService:
         )
 
     # start the thread to read frames from the video stream     
-    def start(self):
-        t = Thread(target=self.start_push, args=())
-        t.daemon = True
-        t.start()
-        return self
+    # def start(self):
+    #     t = Thread(target=self.start_push, args=())
+    #     t.daemon = True
+    #     t.start()
+    #     return self
 
     # start Pusher method
-    def start_push(self):
-        self.pusher_client.trigger('my-channel', 'my-event', {'message': self.movingDistance})
+    def push(self, context):
+        self.pusher_client.trigger('my-channel', 'my-event', {'message': context})
 
 
 
