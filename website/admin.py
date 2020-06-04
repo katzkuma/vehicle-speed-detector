@@ -10,6 +10,7 @@ class CameraAdmin(admin.ModelAdmin):
     change_form_template = 'admin/website/website_change_form.html'
     list_display = ('camera_name', 'ip_address', 'camera_brand', 'enabled')
     actions = ['enable_camera_for_detection', 'disable_camera_for_detection']
+    exclude = ('enabled',)
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
