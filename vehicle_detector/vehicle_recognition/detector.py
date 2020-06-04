@@ -6,9 +6,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 import numpy as np
 import json
-from keras.layers import Input
-from keras.layers.merge import add
-from keras.models import Model, load_model
+from keras.models import load_model
 from PIL import Image
 
 from cv2 import cv2
@@ -21,8 +19,6 @@ from matplotlib.patches import Rectangle
 
 # for increasing webcam FPS with Python and OpenCV
 from imutils.video import FPS
-import imutils
-
 from threading import Thread
 
 from website.models import Camera, URLPathByBrand 
@@ -38,8 +34,8 @@ class Vehicle_Detector():
         #Load the saved model
         self.model = load_model(os.path.join(BASE_DIR, 'parameter', 'yolov3.h5'))
 
-        # query all enables camera form database
-        self.cameraSet = Camera.objects.all().filter(enabled = True)
+        # initialize a variable for getting data form database
+        self.cameraSet = None
 
         # initialize parameter of neural network
         self.font=cv2.FONT_HERSHEY_TRIPLEX
@@ -47,8 +43,11 @@ class Vehicle_Detector():
         self.frame = []
 
         # initialize threads for getting img and run neural network
-        self.vs = VideoStream(src=None)
+        self.vs = VideoStream(cameraSet=None)
         self.detector_thread = None
+
+        # initialize the pusher service
+        self.pusher = pusherService()
     
     def start(self):
         # turn detector on
@@ -64,8 +63,11 @@ class Vehicle_Detector():
         # define the lastObjectDistance for calculating speed
         lastObjectDistance = 0
 
+        # query all enables camera form database
+        self.cameraSet = Camera.objects.all().filter(enabled = True)
+
         # initialize the thread for streamming video
-        self.vs = VideoStream().start()
+        self.vs = VideoStream(self.cameraSet).start()
         print("[Detector] starting THREADED frames from web camera...")   
         
         # check if the thread should be stop
@@ -73,87 +75,69 @@ class Vehicle_Detector():
             # start counting fps
             fpsCounter = FPS().start()
 
-            # initialize streamming url
-            streamming_url = None
-
             while True:
                 # check if the thread should be stop
                 if self.stopped is True:
                     self.vs.stop()
                     break
 
+                frames = self.vs.read()
+
                 detected_result = {}
                 
                 # detect each camera
                 for camera in self.cameraSet:
-                    # TODO: need to adjust to get it from local
-                    url_path = URLPathByBrand.objects.get(camera_brand=camera.camera_brand, streamming_type=camera.streamming_type).URLPath
-
-                    # create streamming_url from data
-                    # the MAC is for the webcam of macbook 
-                    if camera.camera_brand == 'MAC':
-                        streamming_url = 0
-                    else:
-                        if camera.streamming_type == "IMAGE":
-                            streamming_url = 'http://' + camera.camera_user + ':' + camera.camera_password + '@' + camera.ip_address + url_path
-                        else:
-                            streamming_url = 'rtsp://' + camera.camera_user + ':' + camera.camera_password + '@' + camera.ip_address + url_path
-
-                    
-                    
-                    # setting streamming source
-                    self.vs.source(streamming_url)
-
                     # get image from web camera
-                    frame = self.vs.read()
+                    frame = frames[camera.camera_name]
                     if frame is None:
                         print('[Detector] Request img from camera time out: ' + camera.camera_name)
-                    
-                    # load and prepare image
-                    image, image_w, image_h, input_w, input_h = loadCam.load_image_cam(frame)
+                    else:
+                        # load and prepare image
+                        image, image_w, image_h, input_w, input_h = loadCam.load_image_cam(frame)
 
-                    # get region of interest by calling method
-                    ROIframe = self.create_ROI_layer(frame.copy(), image_w, image_h, camera.region_of_interest)
-                    
-                    # make prediction and start to time
-                    starting_time= time.time()
-                    yhat = self.model.predict(image)
-                    # summarize the shape of the list of arrays
-                    print([a.shape for a in yhat])
-                    # define the anchors
-                    anchors = [[116,90, 156,198, 373,326], [30,61, 62,45, 59,119], [10,13, 16,30, 33,23]]
-                    # define the probability threshold for detected objects
-                    class_threshold = 0.6
-                    boxes = list()
-                    for i in range(len(yhat)):
-                        # decode the output of the network
-                        boxes += predict.decode_netout(yhat[i][0], anchors[i], class_threshold, input_h, input_w)
-                    # suppress non-maximal boxes
-                    predict.do_nms(boxes, 0.5)
-                    # correct the sizes of the bounding boxes for the shape of the image
-                    predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w, ROIframe)
+                        # get region of interest by calling method
+                        ROIframe = self.create_ROI_layer(frame.copy(), image_w, image_h, camera.region_of_interest)
+                        
+                        # make prediction and start to time
+                        starting_time= time.time()
+                        yhat = self.model.predict(image)
+                        
+                        # summarize the shape of the list of arrays
+                        print([a.shape for a in yhat])
+                        # define the anchors
+                        anchors = [[116,90, 156,198, 373,326], [30,61, 62,45, 59,119], [10,13, 16,30, 33,23]]
+                        # define the probability threshold for detected objects
+                        class_threshold = 0.6
+                        boxes = list()
+                        for i in range(len(yhat)):
+                            # decode the output of the network
+                            boxes += predict.decode_netout(yhat[i][0], anchors[i], class_threshold, input_h, input_w)
+                        # suppress non-maximal boxes
+                        predict.do_nms(boxes, 0.5)
+                        # correct the sizes of the bounding boxes for the shape of the image
+                        predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w, ROIframe)
 
-                    # get the details of the detected objects
-                    v_boxes, v_labels, v_scores, v_boxid = predict.get_boxes(boxes, class_threshold)
+                        # get the details of the detected objects
+                        v_boxes, v_labels, v_scores, v_boxid = predict.get_boxes(boxes, class_threshold)
 
-                    #show the computed time
-                    elapsed_time = time.time() - starting_time
-                    fps=1/elapsed_time
-                    print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
-                    predict.draw_fps(frame, fps)
+                        #show the computed time
+                        elapsed_time = time.time() - starting_time
+                        fps=1/elapsed_time
+                        print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
+                        predict.draw_fps(frame, fps)
 
-                    print('Detected from ' + camera.camera_name + '(' + camera.ip_address + ')')
-                    # summarize what we found
-                    for i in range(len(v_boxes)):
-                        print(v_labels[i], v_scores[i])
-                    # draw what we found
-                    newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
+                        print('Detected from ' + camera.camera_name + '(' + camera.ip_address + ')')
+                        # summarize what we found
+                        for i in range(len(v_boxes)):
+                            print(v_labels[i], v_scores[i])
+                        # draw what we found
+                        newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
 
-                    # creating the dict for storing detected result
-                    detected_result[camera.camera_name] = [len(v_boxes), [float(camera.first_lat_recognition_section), float(camera.first_lon_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lon_recognition_section)]]
+                        # creating the dict for storing detected result
+                        detected_result[camera.camera_name] = [len(v_boxes), [float(camera.first_lat_recognition_section), float(camera.first_lon_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lon_recognition_section)]]
 
-                    # saving current distance of detected object
-                    lastObjectDistance = currentObjectDistance
+                        # saving current distance of detected object
+                        lastObjectDistance = currentObjectDistance
 
                     # drawing detecting line on output form
                     # cv2.line(frame, self.points[0], self.points[1], (0, 0, 255), 5)
@@ -166,10 +150,22 @@ class Vehicle_Detector():
                     key=cv2.waitKey(1)
                     if key == ord('q'):
                         break
+                
 
-                # push detected result by using Pusher API
-                pusher = pusherService(detected_result)
-                pusher.start()
+                # # push detected result by using Pusher API
+                # while True:
+                #     if (datetime.datetime.now() - last_push_time).total_seconds() < 5:
+                #         continue
+
+                #     pusher = pusherService(detected_result)
+                #     pusher.start()
+
+                #     last_push_time = datetime.datetime.now()
+                #     break
+                
+                self.pusher.push(detected_result)
+
+                
 
             fpsCounter.stop()
             print("[INFO] elasped time: {:.2f}".format(fpsCounter.elapsed()))
