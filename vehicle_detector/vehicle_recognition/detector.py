@@ -134,7 +134,7 @@ class Vehicle_Detector():
                         newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
 
                         # creating the dict for storing detected result
-                        detected_result[camera.camera_name] = [len(v_boxes), [float(camera.first_lat_recognition_section), float(camera.first_lon_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lon_recognition_section)]]
+                        detected_result[camera.camera_name] = [len(v_boxes), [float(camera.first_lat_recognition_section), float(camera.first_lng_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lng_recognition_section)]]
 
                         # saving current distance of detected object
                         lastObjectDistance = currentObjectDistance
