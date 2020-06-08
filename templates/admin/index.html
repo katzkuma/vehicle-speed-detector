@@ -14,41 +14,43 @@
 <div id="content-detector">
 
 {% if app_list %}
-    <div class="app-auth module">
-        <form id="switchForm" action="/detector/operator" method="POST">
-            {% csrf_token %}
-            <table>
-                <caption>
-                    <a href="#" class="section" title="Detector Operation">Detector Control</a>
-                </caption>
-                <tbody>
-                    <tr class="">
-                        {% if detector_stopped %}
-                        <th scope="row"><a href="#">Detector Status (shut down)</a></th>
-                        <td><button onclick="turnDetectorON(true); return false" class="btn">Turn On</button></td>
-                        {% else %}
-                        <th scope="row"><a href="#">Detector Status (running)</a></th>
-                        <td><button onclick="turnDetectorON(false); return false" class="btn">Turn Off</button></td>
-                        {% endif %}
-                        <input id="switchArg" name="switchArg" value="" hidden>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
-    </div>
-    <script>
-        function turnDetectorON(bool)
-        {
-            if(bool){
-                $('#switchArg').val('ON')
-            }
-            else{
-                $('#switchArg').val('OFF')
-            }
+    {% if request.path == '/admin/' %}
+        <div class="app-auth module">
+            <form id="switchForm" action="/detector/operator" method="POST">
+                {% csrf_token %}
+                <table>
+                    <caption>
+                        <a href="#" class="section" title="Detector Operation">Detector Control</a>
+                    </caption>
+                    <tbody>
+                        <tr class="">
+                            {% if detector_stopped %}
+                            <th scope="row"><a href="#">Detector Status (shut down)</a></th>
+                            <td><button onclick="turnDetectorON(true); return false" class="btn">Turn On</button></td>
+                            {% else %}
+                            <th scope="row"><a href="#">Detector Status (running)</a></th>
+                            <td><button onclick="turnDetectorON(false); return false" class="btn">Turn Off</button></td>
+                            {% endif %}
+                            <input id="switchArg" name="switchArg" value="" hidden>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <script>
+            function turnDetectorON(bool)
+            {
+                if(bool){
+                    $('#switchArg').val('ON')
+                }
+                else{
+                    $('#switchArg').val('OFF')
+                }
 
-            $('#switchForm').submit()
-        }
-    </script>
+                $('#switchForm').submit()
+            }
+        </script>
+    {% endif %}
 {% else %}
     {% comment %} <p>{% trans 'You don’t have permission to view or edit anything.' %}</p> {% endcomment %}
 {% endif %}
