@@ -47,6 +47,9 @@ class Camera(models.Model):
 
     region_of_interest = models.TextField(default='{ "first_point":[0, 0], "second_point":[0, 0], "third_point":[0, 0], "fourth_point":[0, 0] }')
 
+    max_amount_of_green = models.IntegerField(default=5)
+    max_amount_of_orange = models.IntegerField(default=10)
+
     camera_latitude = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     camera_longitude = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     focal_length = models.FloatField(default=0)

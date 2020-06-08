@@ -133,8 +133,10 @@ class Vehicle_Detector():
                         # draw what we found
                         newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
 
+                        detected_color = self.get_color(len(v_boxes), camera.max_amount_of_green, camera.max_amount_of_orange)
+
                         # creating the dict for storing detected result
-                        detected_result[camera.camera_name] = [len(v_boxes), [float(camera.first_lat_recognition_section), float(camera.first_lng_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lng_recognition_section)]]
+                        detected_result[camera.camera_name] = [len(v_boxes), detected_color, [float(camera.first_lat_recognition_section), float(camera.first_lng_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lng_recognition_section)]]
 
                         # saving current distance of detected object
                         lastObjectDistance = currentObjectDistance
@@ -199,3 +201,11 @@ class Vehicle_Detector():
         cv2.fillPoly(ROIFrame, [pointsForPoly], (0, 0, 255))
 
         return ROIFrame
+
+    def get_color(self, numbers_of_detected, max_amount_of_green, max_amount_of_orange):
+        if numbers_of_detected >= 0 and numbers_of_detected <= max_amount_of_green:
+            return 'green'
+        elif numbers_of_detected <= max_amount_of_orange:
+            return 'orange'
+        else:
+            return 'red'
