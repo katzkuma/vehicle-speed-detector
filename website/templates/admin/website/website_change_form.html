@@ -5,7 +5,21 @@
 
 {% comment %} extends into head of HTML {% endcomment %}
 {% block extrahead %}{{ block.super }}
-    <link rel="stylesheet" href="{% static "css/ROISelector.css" %}" />
+    <link rel="stylesheet" href="{% static "css/change_form.css" %}" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static "bootstrap/4.4.1/css/bootstrap.min.css" %}">
+
+    <!-- JQuery UI for slider -->
+    <link rel="stylesheet" href="{% static "jquery-ui/jquery-ui.css" %}">
+    <script src="{% static "jquery-ui/jquery-ui.js" %}"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="{% static "leaflet/leaflet.css" %}"/>
+
+    <!-- Leaflet JavaScript -->
+    <script src="{% static "leaflet/leaflet.js" %}"/>
+    </script>
 {{ media }}
 {% endblock extrahead %}
 
@@ -15,17 +29,22 @@
     <script>
         {% comment %} make custom URLFormField looks like build-in one {% endcomment %}
         $('#id_stream_url').attr('class','vURLField')
-        {% comment %} hide build-in ROI input for showing custom ROI selector {% endcomment %}
-        $('#camera_form > div > fieldset > div.form-row.field-region_of_interest').attr('hidden','')
+
         {% comment %} make those input of form can read to submit {% endcomment %}
         $('form').submit(function(e) {
             $(':disabled').each(function(e) {
                 $(this).removeAttr('disabled');
             })
         });
+    </script>
+
+    {% comment %} ----------------------- add detected session selector -------------------- {% endcomment %}
+    <script>
+        {% comment %} hide build-in ROI input for showing custom ROI selector {% endcomment %}
+        $('#camera_form > div > fieldset > div.form-row.field-region_of_interest').attr('hidden','')
 
         {% comment %} insert custom ROI selector {% endcomment %}
-        $('#camera_form > div > fieldset > div.form-row.field-stream_resolution').after(
+        $('#camera_form > div > fieldset > div.form-row.field-region_of_interest').before(
             '\
                 <div class="form-row field-video-stream">\
                     <div>\
@@ -106,6 +125,12 @@
     
     {% comment %} include ROI selector .js {% endcomment %}
     <script src="{% static "js/ROISelector.js" %}"></script>
+
+    {% comment %} ----------------------- add detected section selector -------------------- {% endcomment %}
+    <script src="{% static "js/section_selector.js" %}"></script>
+
+    {% comment %} ----------------------- add coloring condition slider -------------------- {% endcomment %}
+    <script src="{% static "js/coloring_slider.js" %}"></script>
 
 
 {% endblock field_sets %}

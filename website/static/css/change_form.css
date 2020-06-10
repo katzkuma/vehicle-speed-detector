@@ -24,3 +24,13 @@ z-index: 10;
 .ui-draggable-handle {
     cursor: move;
 }
+
+#mapid {
+    width: 570px; 
+    height: 360px;
+}
+
+.condition_table label {
+    display: contents;
+    color: black;
+}
