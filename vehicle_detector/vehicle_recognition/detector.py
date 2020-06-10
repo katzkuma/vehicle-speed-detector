@@ -23,6 +23,9 @@ from threading import Thread
 
 from website.models import Camera, URLPathByBrand 
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 class Vehicle_Detector():
     def __init__(self):
         # initialize a variable for threading
@@ -165,7 +168,7 @@ class Vehicle_Detector():
                 #     last_push_time = datetime.datetime.now()
                 #     break
                 
-                self.pusher.push(detected_result)
+                self.push(detected_result)
 
                 
 
@@ -209,3 +212,10 @@ class Vehicle_Detector():
             return 'orange'
         else:
             return 'red'
+
+    def push(self, message):
+        layer = get_channel_layer()
+        async_to_sync(layer.group_send)('lobby', {
+            'type': 'chat_message',
+            'message': message
+        })

@@ -1,9 +1,3 @@
-// include Pusher API form pusher.com
-(function(i,s,o,g,r,a,m) { i['TrafficSituationPusher']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)}, i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=0;a.src=g;m.parentNode.insertBefore(a,m)})
-    (window,document,'script','https://js.pusher.com/5.1/pusher.min.js','push');
-
 // initialize the string for getting id of leaflet map
 // please set it before using this js file
 var leaflet_map_id = 'mymap';
@@ -42,18 +36,17 @@ function update_traffic_situation(detected_results) {
 $(window).on('load', function() {
     map_for_traffic_situation = window["Object"].values(window)[window["Object"].keys(window).indexOf(leaflet_map_id)]
     
-    Pusher.logToConsole = true;
+    // initialize websocket to receive traffic situation data
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/push/');
 
-    var pusher = new Pusher('b65f086d00319eef857b', {
-        cluster: 'us2',
-        forceTLS: true
-    });
-    
-    var channel = pusher.subscribe('my-channel');
-    channel.bind('my-event', function(data) {
-        update_traffic_situation(data['message'])
-    });
-}).on('load', (function(i,s,o,g,r,a,m) { i['TrafficSituationPusher']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)}, i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=0;a.src=g;m.parentNode.insertBefore(a,m)})
-    (window,document,'script','https://js.pusher.com/5.1/pusher.min.js','push'));
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = data['message'];
+        update_traffic_situation(message)
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Pusher socket closed unexpectedly');
+    };
+})

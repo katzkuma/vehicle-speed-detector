@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'website',
     'vehicle_detector',
     # for setting customized admin pages
-    'Traffic_Situation_System.apps.TSDAdminConfig'
+    'Traffic_Situation_System.apps.TSDAdminConfig',
+    # this app is used to implement websocket in django
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -127,3 +129,39 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.0/ref/contrib/gis/install/spatialite/#spatialite-macos
 
 # SPATIALITE_LIBRARY_PATH='/usr/local/lib/mod_spatialite.dylib'
+
+
+# for channels package
+ASGI_APPLICATION = 'Traffic_Situation_System.routing.application'
+
+CHANNEL_LAYERS = {
+  'default': {
+    'BACKEND': 'channels_redis.core.RedisChannelLayer',
+    'CONFIG': {
+      'hosts': [('127.0.0.1', 6379)],
+    },
+  },
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'normal': {
+            'format': '%(levelname)s | %(asctime)s | app: %(module)s pid: %(process)d th: %(thread)d | %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',  # Default logs to stderr
+            'formatter': 'normal',  # use the above "normal" formatter
+        }
+    },
+    'loggers': {
+        'django': {  # Modify logger in some modules
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
