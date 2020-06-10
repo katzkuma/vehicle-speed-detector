@@ -47,14 +47,17 @@ class Camera(models.Model):
 
     region_of_interest = models.TextField(default='{ "first_point":[0, 0], "second_point":[0, 0], "third_point":[0, 0], "fourth_point":[0, 0] }')
 
+    max_amount_of_green = models.IntegerField(default=5)
+    max_amount_of_orange = models.IntegerField(default=10)
+
     camera_latitude = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     camera_longitude = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     focal_length = models.FloatField(default=0)
     camera_height = models.FloatField(default=0)
     first_lat_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
-    first_lon_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
+    first_lng_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     second_lat_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
-    second_lon_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
+    second_lng_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     last_modify_date = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     class Meta:
@@ -62,9 +65,9 @@ class Camera(models.Model):
 
 class TrafficRecord(models.Model):
     first_lat_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
-    first_lon_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
+    first_lng_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     second_lat_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
-    second_lon_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
+    second_lng_recognition_section = models.DecimalField(default=0, decimal_places=6, max_digits=9)
     detected_vehicles = models.IntegerField(default=0)
     time_mean_speed = models.FloatField(default=0)
     last_modify_date = models.DateTimeField(auto_now=True)
