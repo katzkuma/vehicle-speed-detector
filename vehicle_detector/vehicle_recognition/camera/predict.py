@@ -31,9 +31,8 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
             # 4th element is objectness score
             objectness = netout[int(row)][int(col)][b][4]
             if(objectness.all() <= obj_thresh): continue
-            
-            if(netout[int(row)][col][b][5:][0] == 0): continue
-            # if(netout[int(row)][col][b][5:][0] == 0 and netout[int(row)][col][b][5:][2] == 0 and netout[int(row)][col][b][5:][7] == 0): continue
+            # exclude the objects which is not human, car, bus or truck
+            if(netout[int(row)][col][b][5:][0] == 0 and netout[int(row)][col][b][5:][2] == 0 and netout[int(row)][col][b][5:][5] == 0 and netout[int(row)][col][b][5:][7] == 0): continue
             # first 4 elements are x, y, w, and h
             x, y, w, h = netout[int(row)][int(col)][b][:4]
             x = (col + x) / grid_w # center position, unit: image width
@@ -72,9 +71,8 @@ class BoundBox:
  
         return self.score
 
-def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w, hotspot):
+def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
     new_w, new_h = net_w, net_h
-    removeList = list()
     for i in range(len(boxes)):
         x_offset, x_scale = (net_w - new_w)/2./net_w, float(new_w)/net_w
         y_offset, y_scale = (net_h - new_h)/2./net_h, float(new_h)/net_h
@@ -82,14 +80,6 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w, hotspot):
         boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
         boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
-        cx = (boxes[i].xmin + boxes[i].xmax) / 2
-        cy = (boxes[i].ymin + boxes[i].ymax) / 2
-        if cx > 80 and cx < 1200 and cy > 60 and cy < 700:
-            if (hotspot[int(cy), int(cx)] != [0, 0, 255]).all():
-                removeList.append(i)
-
-    for index in range(len(removeList)):
-        boxes.pop(removeList[(index - len(removeList)) * (-1) - 1])
 
 
 def do_nms(boxes, nms_thresh):
@@ -123,28 +113,50 @@ def _interval_overlap(interval_a, interval_b):
         if x4 < x1:
             return 0
         else:
-            return min(x2,x4) - x1
+            return min(x2, x4) - x1
     else:
         if x2 < x3:
              return 0
         else:
-            return min(x2,x4) - x3
+            return min(x2, x4) - x3
         
 # get all of the results above a threshold
-def get_boxes(boxes, thresh):
-    v_boxes, v_labels, v_scores, v_boxid = list(), list(), list(), list()
+def get_boxes(input_boxes, thresh, ROI_frame):
+    # initialize a dict to seperate
+    boxes = {
+                'person': {'boxes': [], 'labels': [], 'scores': [], 'cx': [], 'cy': []}, 
+                'vehicle': {'boxes': [], 'labels': [], 'scores': [], 'cx': [], 'cy': []}
+            }
     # enumerate all boxes
-    for box in boxes:
+    for input_box in input_boxes:
         # enumerate all possible labels
         for i in range(len(labels)):
             # check if the threshold for this label is high enough
-            if box.classes[i] > thresh:
-                v_boxes.append(box)
-                v_labels.append(labels[i])
-                v_scores.append(box.classes[i]*100)
-                v_boxid.append(i)
+            if input_box.classes[i] > thresh:
+                # seperate boxes to person and vehicle
+                if input_box.get_label() == 0:
+                    boxes['person']['boxes'].append(input_box)
+                    boxes['person']['labels'].append(input_box.get_label())
+                    boxes['person']['scores'].append(input_box.classes[i]*100)
+                    boxes['person']['cx'].append((input_box.xmin + input_box.xmax) / 2)
+                    boxes['person']['cy'].append((input_box.ymin + input_box.ymax) / 2)
+                else:
+                    cx = (input_box.xmin + input_box.xmax) / 2
+                    cy = (input_box.ymin + input_box.ymax) / 2
+                    if (ROI_filter(cx, cy, ROI_frame) is False): continue
+                    boxes['vehicle']['boxes'].append(input_box)
+                    boxes['vehicle']['labels'].append(input_box.get_label())
+                    boxes['vehicle']['scores'].append(input_box.classes[i]*100)
+                    boxes['vehicle']['cx'].append(cx)
+                    boxes['vehicle']['cy'].append(cy)
                 # don't break, many labels may trigger for one box
-    return v_boxes, v_labels, v_scores, v_boxid
+    return boxes
+
+def ROI_filter(cx, cy, roi):
+    if cx > 80 and cx < 1200 and cy > 60 and cy < 700:
+        if (roi[int(cy), int(cx)] == [0, 0, 255]).all():
+            return True
+    return False
 
 # draw all results
 def draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance):
