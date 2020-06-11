@@ -63,9 +63,6 @@ class Vehicle_Detector():
         return self
 
     def detect(self):
-        # define the lastObjectDistance for calculating speed
-        lastObjectDistance = 0
-
         # query all enables camera form database
         self.cameraSet = Camera.objects.all().filter(enabled = True)
 
@@ -98,17 +95,15 @@ class Vehicle_Detector():
                         # load and prepare image
                         image, image_w, image_h, input_w, input_h = loadCam.load_image_cam(frame)
 
-                        # get region of interest by calling method
+                        # get region of interest by calling method create_ROI_layer
                         ROIframe = self.create_ROI_layer(frame.copy(), image_w, image_h, camera.region_of_interest)
                         
                         # make prediction and start to time
-                        starting_time= time.time()
+                        starting_time = time.time()
                         yhat = self.model.predict(image)
                         
-                        # summarize the shape of the list of arrays
-                        print([a.shape for a in yhat])
                         # define the anchors
-                        anchors = [[116,90, 156,198, 373,326], [30,61, 62,45, 59,119], [10,13, 16,30, 33,23]]
+                        anchors = [[116, 90, 156, 198, 373, 326], [30, 61, 62, 45, 59, 119], [10, 13, 16, 30, 33, 23]]
                         # define the probability threshold for detected objects
                         class_threshold = 0.6
                         boxes = list()
@@ -118,59 +113,35 @@ class Vehicle_Detector():
                         # suppress non-maximal boxes
                         predict.do_nms(boxes, 0.5)
                         # correct the sizes of the bounding boxes for the shape of the image
-                        predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w, ROIframe)
+                        predict.correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w)
 
-                        # get the details of the detected objects
-                        v_boxes, v_labels, v_scores, v_boxid = predict.get_boxes(boxes, class_threshold)
+                        # get the details of the detected objects and seperate boxes to humans and vehicles
+                        boxes_with_category = predict.get_boxes(boxes, class_threshold, ROIframe)
 
-                        #show the computed time
-                        elapsed_time = time.time() - starting_time
-                        fps=1/elapsed_time
-                        print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
-                        predict.draw_fps(frame, fps)
+                        # summarize what detector found
+                        numbers_of_human = len(boxes_with_category['person']['boxes'])
+                        numbers_of_vehicle = len(boxes_with_category['vehicle']['boxes'])
+                        print('[Detector]: Detected ' + str(numbers_of_human) + ' humans and ' + str(numbers_of_vehicle) + ' vehicles from ' + camera.camera_name + '(' + camera.ip_address + ')')
 
-                        print('Detected from ' + camera.camera_name + '(' + camera.ip_address + ')')
-                        # summarize what we found
-                        for i in range(len(v_boxes)):
-                            print(v_labels[i], v_scores[i])
-                        # draw what we found
-                        newMovingSpeed, currentObjectDistance = predict.draw_boxes_cam(frame, v_boxes, v_labels, v_scores, v_boxid, elapsed_time, lastObjectDistance)
-
-                        detected_color = self.get_color(len(v_boxes), camera.max_amount_of_green, camera.max_amount_of_orange)
+                        # calculate the situation color of detected result
+                        detected_color = self.get_color(numbers_of_vehicle, camera.max_amount_of_green, camera.max_amount_of_orange)
 
                         # creating the dict for storing detected result
-                        detected_result[camera.camera_name] = [len(v_boxes), detected_color, [float(camera.first_lat_recognition_section), float(camera.first_lng_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lng_recognition_section)]]
+                        detected_result[camera.camera_name] = [numbers_of_vehicle, detected_color, [float(camera.first_lat_recognition_section), float(camera.first_lng_recognition_section)], [float(camera.second_lat_recognition_section), float(camera.second_lng_recognition_section)]]
 
-                        # saving current distance of detected object
-                        lastObjectDistance = currentObjectDistance
-
-                    # drawing detecting line on output form
-                    # cv2.line(frame, self.points[0], self.points[1], (0, 0, 255), 5)
-                    # cv2.line(frame, self.points[1], self.points[2], (0, 0, 255), 5)
-                    # cv2.line(frame, self.points[2], self.points[3], (0, 0, 255), 5)
-                    # cv2.line(frame, self.points[3], self.points[0], (0, 0, 255), 5)
-
-                    # cv2.imshow("Capturing", frame)
                     fpsCounter.update()
                     key=cv2.waitKey(1)
                     if key == ord('q'):
                         break
                 
-
-                # # push detected result by using Pusher API
-                # while True:
-                #     if (datetime.datetime.now() - last_push_time).total_seconds() < 5:
-                #         continue
-
-                #     pusher = pusherService(detected_result)
-                #     pusher.start()
-
-                #     last_push_time = datetime.datetime.now()
-                #     break
-                
+                # push detected result to web browser
                 self.push(detected_result)
 
-                
+                #show the computed time
+                elapsed_time = time.time() - starting_time
+                fps=1/elapsed_time
+                print("Time:"+str(round(elapsed_time,2))+" FPS:"+str(round(fps,2)))
+                predict.draw_fps(frame, fps)
 
             fpsCounter.stop()
             print("[INFO] elasped time: {:.2f}".format(fpsCounter.elapsed()))
