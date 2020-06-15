@@ -12,7 +12,6 @@ from PIL import Image
 from cv2 import cv2
 from .camera import loadCam, predict
 from .camera.videoStream import VideoStream
-from .pusherService import pusherService
 
 import time
 from matplotlib.patches import Rectangle
@@ -48,9 +47,6 @@ class Vehicle_Detector():
         # initialize threads for getting img and run neural network
         self.vs = VideoStream(cameraSet=None)
         self.detector_thread = None
-
-        # initialize the pusher service
-        self.pusher = pusherService()
     
     def start(self):
         # turn detector on
